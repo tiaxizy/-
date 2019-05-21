@@ -2,7 +2,7 @@ from socket import *
 from time import *
 from select import *
 
-host = '10.255.1.230'
+host = '10.255.1.230'       #服务器ip，根据需要改写
 port = 8765
 addr=(host,8765)    #地址
 inputs=[]    #套接字列表
