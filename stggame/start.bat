@@ -1,0 +1,1 @@
+start jre/bin/javaw -jar game_demo.jar

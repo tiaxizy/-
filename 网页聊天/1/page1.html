@@ -1,0 +1,84 @@
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>实验2</title>
+</head>
+
+<body onload="load()" >
+
+  <table width="700" height="486" border="1">
+    <caption id="room">
+      {{ room }}
+    </caption>
+    <tr>
+      <th width="600" height="414" scope="col" rowspan="2">
+        <textarea style="width:600px;height: 500px;resize: none" readonly id='message'>
+      </textarea>
+
+      </th>
+      <th width="100" scope="col">
+        <textarea style="width:100px;height: 470px;resize: none" readonly>
+          {% for i in roomdict[room].values() %}
+          {{ i }}
+          {% end %}</textarea>
+          
+      </th>
+    </tr>
+    <tr><td><input type="button"  onclick="clearmessage()" style="width:100px;height:30px" value="清除记录" /></td></tr>
+    
+  </table>
+
+  <table>
+    <tr>
+      <td height="66">
+        <input type="text" style="width:600px;height:30px" maxlength="100" name='text' id='text' />
+        <input type="hidden" name='name'  value="{{name}}"/>
+        <input type="hidden" name='room'  value="{{room}}"/>
+       
+        <button  onclick="sendmessage()" style="width:100px;height:30px" name="send1" id="send1">发送</button></td>
+    </tr>
+  </table>
+  <script type="text/javascript">
+    function requestText() {
+      var host = "ws://"+location.host+"/action2"+"?name={{name}}&room={{room}}"
+      websocket = new WebSocket(host)
+      websocket.onopen = function (evt) {      // 建立连接  
+      } 
+      websocket.onmessage = function (evt) {    // 获取服务器返回的信息
+        document.getElementById('message').innerHTML += evt.data;
+        
+      }
+      websocket.onclose=function(evt){
+        localStorage.setItem(document.getElementById('room').innerHTML , document.getElementById('message').innerHTML);
+      }
+    }
+    requestText()   // 开始 websocket
+    function sendmessage() {
+      var message = document.getElementById('text').value;
+      websocket.send("{{name}}:"+message);
+    }
+    function load(){
+      document.getElementById('message').innerHTML += localStorage.getItem(document.getElementById('room').innerHTML ,message);}
+
+    function clearmessage(){
+      alert("清除成功！");
+      document.getElementById('message').innerHTML = "";
+      var mes=document.getElementById('room').innerHTML;
+      localStorage.removeItem(mes);
+    }
+    function keypress1() { 
+        if(event.keyCode == 13) { 
+            document.getElementById("send1").click(); 
+        } 
+    } 
+
+    </script>
+    <SCRIPT LANGUAGE=javascript FOR=document EVENT=onkeypress>
+      document_onkeypress()
+      </SCRIPT>
+</body>
+
+</html>

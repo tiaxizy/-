@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style type="text/css">
+        * {
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="coordiv" style="float:left;width:400px;height:400px;border:1px solid #c3c3c3"
+        onmousemove="cnvs_getCoordinates(event)" onmouseout="cnvs_clearCoordinates()">
+        <canvas id="mycanvas" onmousemove="f()" width="400" height="400" style="border:1px solid #000000;">您的浏览器不支持
+            HTML5 canvas
+            标签。</canvas></div>
+    <div><button id="clip" onclick="save()">裁剪</button>
+        <button id="ref" onclick="newcav()">刷新</button>
+        <button type="submit" onclick="sendmessage">提交</button>
+    </div>
+    <div id="xycoordinates"></div>
+    <p>---------------------------------------------------------------------------------------------------------------------------------------</p>
+    <canvas id="mycanvas2" width="28" height="28" hidden></canvas>
+    
+</body>
+<script>
+    //鼠标坐标
+    var x, y;
+    var x1, y1, x2, y2;
+    var x_min,y_min,x_max,y_max;
+    var flag = 0;
+    var count=0;
+    var img1
+
+    //var c = document.getElementById('mycanvas');
+    //var ctx = c.getContext("2d");
+    var canvas = document.getElementById('mycanvas');
+    var context = canvas.getContext('2d');
+    context.lineWidth = 15;
+    context.lineCap = "round";
+
+    function onmousemove(event) {
+        cnvs_getCoordinates(event)
+    }
+    function cnvs_getCoordinates(e) {
+        x = e.clientX;
+        y = e.clientY;
+        document.getElementById("xycoordinates").innerHTML = "Coordinates: (" + x + "," + y + ")"+" xymin" + x_min + "," + y_min +" xymax" + x_max + "," + y_max ;
+    }
+
+    function cnvs_clearCoordinates() {
+        document.getElementById("xycoordinates").innerHTML = "";
+    }
+
+    
+    function draw() {
+        //绘制起始点、控制点、终点
+        if (x1 == null || y1 == null) {
+            x1 = x;
+            y1 = y;
+            x2 = x;
+            y2 = y;
+        }
+        else {
+            //绘制2次贝塞尔曲线 
+            if(count%2==0){ 
+            context.beginPath();
+            context.moveTo(x1, y1);
+            context.quadraticCurveTo(x2, y2, x, y);
+            context.strokeStyle = "green";
+            context.stroke();}
+            x1 = x2;
+            y1 = y2;
+            x2 = x;
+            y2 = y;
+        }
+        count++;
+    }
+    function f() {
+        if(flag==1){draw();}
+    }
+    document.onmousedown=function (e){
+        flag = 1;
+        x = e.clientX;
+        y = e.clientY;
+        context.fillStyle = "green";
+        context.beginPath();
+        context.arc(x,y,7.5,0,2*Math.PI);
+        context.closePath();
+        context.fill();
+        x1=null;
+        y1=null;
+        
+    }
+    document.onmouseup=function (e){
+        flag = 0;
+    }
+    document.onmousemove=function (e){
+        if(flag==1){draw();
+        x = e.clientX;
+        y = e.clientY;
+        if(x-x_min<=8||x_min==null)x_min=x-8;
+        if(y-y_min<=8||y_min==null)y_min=y-8;
+        if(x-x_max>=-8||x_max==null)x_max=x+8;
+        if(y-y_max>=-8||y_max==null)y_max=y+8;
+
+    }
+        
+    }
+
+    function save(){
+        
+        var canvas2 = document.getElementById('mycanvas2');
+
+        if(ctx=canvas2.getContext("2d")){
+        ctx.drawImage(
+            canvas, //规定要使用的图像、画布或视频。
+            x_min, y_min, //开始剪切的 x 坐标位置。
+            x_max-x_min, y_max-y_min,  //被剪切图像的高度。
+            0, 0,//在画布上放置图像的 x 、y坐标位置。
+            28, 28  //要使用的图像的宽度、高度
+        );
+        
+        var image = document.createElement("img"); //添加一个img元素
+      
+        image.src = canvas2.toDataURL("image/png"); //将获取的图像的URL赋值给src属性
+        document.body.appendChild(image); //将元素添加到页面中
+        img1=ctx.getImageData(0,0,28,28)
+        
+        }
+    }
+
+    function newcav(){
+        context.fillStyle="white";
+        context.fillRect(-50,-50,450,450);
+        
+    }
+    
+    var websocket = new WebSocket("ws://"+location.host+"/page1");
+    function requestText() {
+      
+      websocket.onopen = function (evt) {      // 建立连接  
+      } 
+      websocket.onmessage = function (evt) {    // 获取服务器返回的信息
+        alert(evt.data);
+      }
+      websocket.onclose=function(evt){
+      }
+    }
+    requestText()   // 开始 websocket
+    function sendmessage() {
+      websocket.send(img1.data.toString());
+    }
+
+
+
+ 
+</script>
+
+</html>
